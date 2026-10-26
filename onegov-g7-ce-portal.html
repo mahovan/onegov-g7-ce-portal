@@ -868,6 +868,20 @@
       return { sku: "EP2-92323", levelD: base.fullG7USL };
     }
 
+    function getSkuName(sku) {
+      const skuNames = {
+        "EP2-92330": "G7 Add-on (Bridge / Step-up)",
+        "EP2-92323": "Full G7 USL",
+        "EP2-73516": "OneGov GCC FSA bundle",
+        "EP2-73517": "OneGov GCC FUSL bundle",
+        "EP2-73520": "OneGov GCCH FSA bundle",
+        "EP2-73521": "OneGov GCCH FUSL bundle",
+        "EP2-73512": "OneGov DoD FSA bundle",
+        "EP2-73513": "OneGov DoD FUSL bundle"
+      };
+      return skuNames[sku] || "SKU name not mapped";
+    }
+
     function buildScenarioRows() {
       const licenseType = lastResult.licenseType === "Mixed" ? (lastResult.fsaUsers >= lastResult.fuslUsers ? "FSA" : "FUSL") : lastResult.licenseType;
       const rows = lastResult.rows.map((r) => {
@@ -879,6 +893,8 @@
           stage: r.stage,
           sell: r.sell,
           sku: scenario.sku,
+          skuName: getSkuName(scenario.sku),
+          qty: lastResult.totalUsers,
           levelD: roundCurrency(scenario.levelD),
           discountPct,
           discountAmt,
@@ -892,9 +908,9 @@
 
     function buildCsvString() {
       const scenarioRows = buildScenarioRows();
-      const header = ["Stage","Sell Guidance","SKU","Level D Price","Discount Applied %","Net Price","Monthly Total","Notes"];
+      const header = ["Stage","Sell Guidance","SKU","SKU Name","Qty","Level D Price","Discount Applied %","Net Price","Monthly Total","Notes"];
       const rows = scenarioRows.map((r) => [
-        r.stage, r.sell, r.sku, r.levelD.toFixed(2), r.discountPct.toFixed(2), r.netPrice.toFixed(2), r.monthly.toFixed(2), r.notes
+        r.stage, r.sell, r.sku, r.skuName, r.qty, r.levelD.toFixed(2), r.discountPct.toFixed(2), r.netPrice.toFixed(2), r.monthly.toFixed(2), r.notes
       ]);
       const esc = (v) => `"${String(v).replace(/"/g, "\"\"")}"`;
       return [header, ...rows].map((row) => row.map(esc).join(",")).join("\r\n");
@@ -919,13 +935,15 @@
         if (!lastResult) return;
       }
       const scenarioRows = buildScenarioRows();
-      const headers = ["Stage", "Sell Guidance", "SKU", "Level D Price", "Discount Applied", "Net Price", "Monthly Total", "Notes"];
+      const headers = ["Stage", "Sell Guidance", "SKU", "SKU Name", "Qty", "Level D Price", "Discount Applied", "Net Price", "Monthly Total", "Notes"];
       const headerHtml = headers.map((h) => `<th style="font-weight:700;border:1px solid #999;padding:8px;background:#eaeaea;">${h}</th>`).join("");
       const bodyHtml = scenarioRows.map((r) => `
         <tr>
           <td style="border:1px solid #999;padding:8px;">${r.stage}</td>
           <td style="border:1px solid #999;padding:8px;">${r.sell}</td>
           <td style="border:1px solid #999;padding:8px;">${r.sku}</td>
+          <td style="border:1px solid #999;padding:8px;">${r.skuName}</td>
+          <td style="border:1px solid #999;padding:8px;">${r.qty}</td>
           <td style="border:1px solid #999;padding:8px;">$${r.levelD.toFixed(2)}</td>
           <td style="border:1px solid #999;padding:8px;">${r.discountPct.toFixed(2)}%</td>
           <td style="border:1px solid #999;padding:8px;">$${r.netPrice.toFixed(2)}</td>
@@ -938,7 +956,7 @@
 <head><meta charset="UTF-8"></head>
 <body>
   <table style="border-collapse:collapse;font-family:Segoe UI, Arial, sans-serif;font-size:12px;">
-    <tr><th colspan="8" style="text-align:left;padding:8px;border:1px solid #999;background:#d9d9d9;font-weight:700;">
+    <tr><th colspan="10" style="text-align:left;padding:8px;border:1px solid #999;background:#d9d9d9;font-weight:700;">
       Customer: ${lastResult.customerName || ""} | Enrollment: ${lastResult.enrollmentNumber || ""} | Cloud: ${lastResult.cloud} | Pricelist: ${lastResult.pricingType}
     </th></tr>
     <tr>${headerHtml}</tr>
