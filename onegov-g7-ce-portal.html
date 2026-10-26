@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OneGov → G7 CE Portal</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .card {
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: 0 0 2px var(--cp-border-strong), 0 1px 2px var(--cp-border-strong);
+      padding: 16px;
+    }
+    h1, h2, h3 { margin: 0 0 8px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; }
+    p {
+      margin: 0;
+      color: var(--cp-text-muted);
+      line-height: 1.4;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+    label {
+      font-size: 13px;
+      color: var(--cp-text-soft);
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 10px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font: inherit;
+    }
+    .inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      color: var(--cp-text-soft);
+      background: var(--cp-surface-soft);
+      font-size: 12px;
+    }
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    button {
+      border: 1px solid var(--cp-border-strong);
+      border-radius: 0.625rem;
+      padding: 10px 14px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font: inherit;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      border-color: var(--cp-accent);
+    }
+    button.primary:hover { background: var(--cp-accent-hover); }
+    .note {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-text);
+      font-size: 13px;
+    }
+    .warn {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 0.625rem;
+      border: 1px solid var(--cp-warning);
+      color: var(--cp-text);
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--cp-border);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+      font-weight: 600;
+    }
+    .money {
+      font-family: Consolas, "Courier New", Courier, monospace;
+      white-space: nowrap;
+    }
+    .subtle { color: var(--cp-text-soft); font-size: 12px; }
+    @media (max-width: 980px) {
+      .col-3, .col-4, .col-6 { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>OneGov → G7 CE Pricing Portal</h1>
+      <p>Capture enrollment context, identify OneGov year/motion, and generate CE-ready sell guidance with Deal Desk export.</p>
+      <div class="inline" style="margin-top:8px;">
+        <span class="pill">OneGov-aware</span>
+        <span class="pill">G7-ready</span>
+        <span class="pill">Deal Desk export</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Customer and pricing inputs</h2>
+      <div class="grid">
+        <div class="field col-3">
+          <label for="customerName">Customer name</label>
+          <input id="customerName" placeholder="Akima">
+        </div>
+        <div class="field col-3">
+          <label for="enrollmentNumber">Enrollment number</label>
+          <input id="enrollmentNumber" placeholder="e.g., 1234567">
+        </div>
+        <div class="field col-3">
+          <label for="pricelistType">Pricelist type</label>
+          <select id="pricelistType">
+            <option value="new">New Pricelist (post-July)</option>
+            <option value="old">Old Pricelist (pre-July)</option>
+            <option value="custom">Custom Pricing</option>
+          </select>
+        </div>
+        <div class="field col-3">
+          <label for="cloud">Cloud</label>
+          <select id="cloud">
+            <option value="GCC">GCC</option>
+            <option value="GCCH">GCCH</option>
+            <option value="DoD">DoD</option>
+          </select>
+        </div>
+
+        <div class="field col-3">
+          <label for="startDate">Enrollment start date</label>
+          <input id="startDate" type="date">
+        </div>
+        <div class="field col-3">
+          <label for="endDate">Enrollment end date</label>
+          <input id="endDate" type="date">
+        </div>
+        <div class="field col-3">
+          <label for="orderDate">Quote/order date</label>
+          <input id="orderDate" type="date">
+        </div>
+
+        <div class="field col-3">
+          <label for="onegovYear">Current OneGov year</label>
+          <select id="onegovYear">
+            <option value="1">Year 1</option>
+            <option value="2" selected>Year 2</option>
+            <option value="3">Year 3</option>
+          </select>
+        </div>
+        <div class="field col-3">
+          <label for="motion">Motion</label>
+          <select id="motion">
+            <option value="anniversary" selected>Anniversary</option>
+            <option value="midterm">Mid-term</option>
+          </select>
+        </div>
+        <div class="field col-3">
+          <label for="fsaUsers">Qty for FSA</label>
+          <input id="fsaUsers" type="number" min="0" step="1" value="0">
+        </div>
+        <div class="field col-3">
+          <label for="fuslUsers">Qty for FUSL</label>
+          <input id="fuslUsers" type="number" min="0" step="1" value="200">
+        </div>
+        <div class="field col-3">
+          <label for="copilotCoverage">Copilot coverage %</label>
+          <input id="copilotCoverage" type="number" min="0" max="100" step="1" value="100">
+        </div>
+
+        <div class="field col-3">
+          <label for="fullG7Discount">Year 3 target discount off full G7 USL (%)</label>
+          <input id="fullG7Discount" type="number" min="0" max="100" step="1" value="20">
+        </div>
+        <div class="field col-3">
+          <label for="fullG7Cap">Optional Year 3 cap price ($/user)</label>
+          <input id="fullG7Cap" type="number" min="0" step="0.01" placeholder="e.g., 70.00">
+        </div>
+      </div>
+
+      <div id="customSection" class="grid" style="display:none;">
+        <div class="field col-3">
+          <label for="customG5FSA">Custom M365 G5 FSA ($)</label>
+          <input id="customG5FSA" type="number" min="0" step="0.01" value="48.27">
+        </div>
+        <div class="field col-3">
+          <label for="customG5FUSL">Custom M365 G5 FUSL ($)</label>
+          <input id="customG5FUSL" type="number" min="0" step="0.01" value="52.80">
+        </div>
+        <div class="field col-3">
+          <label for="customCopilot">Custom Copilot USL ($)</label>
+          <input id="customCopilot" type="number" min="0" step="0.01" value="30.00">
+        </div>
+        <div class="field col-3">
+          <label for="customA365Entra">Custom A365 + Entra add-on ($)</label>
+          <input id="customA365Entra" type="number" min="0" step="0.01" value="9.00">
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="primary" id="calcBtn" type="button">Calculate guidance</button>
+        <button id="excelBtn" type="button">Download Deal Desk Excel file</button>
+        <button id="csvBtn" type="button">Download CSV (fallback)</button>
+        <button id="showCsvBtn" type="button">Show CSV text (manual save)</button>
+      </div>
+      <div class="subtle" id="downloadStatus" style="margin-top:6px;"></div>
+      <textarea id="csvTextArea" style="display:none;width:100%;min-height:180px;margin-top:8px;border:1px solid var(--cp-border);border-radius:0.625rem;padding:8px;background:var(--cp-surface);color:var(--cp-text);font-family:Consolas, 'Courier New', Courier, monospace;"></textarea>
+      <div class="note">Pricing formulas use your provided OneGov and G7 structure: Y2 = 25% off G5 + 50% off Copilot; Y3 = 25% off G5 + 25% off Copilot; G7 add-on discounting applied per year as configured.</div>
+    </div>
+
+    <div class="card">
+      <h2>Result</h2>
+      <p id="summary">Run calculation to generate CE sell guidance.</p>
+      <div id="warningBox"></div>
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>What CE should sell</th>
+            <th>FSA PUPM</th>
+            <th>FUSL PUPM</th>
+            <th>FSA monthly total</th>
+            <th>FUSL monthly total</th>
+            <th>Combined monthly total</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="subtle" id="calcMeta" style="margin-top:8px;"></p>
+    </div>
+  </div>
+
+  <script>
+    const PRICING = {
+      new: {
+        GCC: { g5FSA: 48.27, g5FUSL: 52.80, copilot: 30.00, addOn: 9.00, fullG7USL: 99.00 },
+        GCCH: { g5FSA: 47.07, g5FUSL: 51.48, copilot: 19.50, addOn: 9.00, fullG7USL: 99.00 },
+        DoD: { g5FSA: 47.06, g5FUSL: 51.48, copilot: 19.50, addOn: 9.00, fullG7USL: 99.00 }
+      },
+      old: {
+        GCC: { g5FSA: 45.86, g5FUSL: 50.16, copilot: 30.00, addOn: 9.00, fullG7USL: 99.00 },
+        GCCH: { g5FSA: 45.86, g5FUSL: 50.16, copilot: 30.00, addOn: 9.00, fullG7USL: 99.00 },
+        DoD: { g5FSA: 45.86, g5FUSL: 50.16, copilot: 30.00, addOn: 9.00, fullG7USL: 99.00 }
+      }
+    };
+
+    const SKU_MAP = {
+      new: {
+        GCC: {
+          FSA: { g5: "AAL-48033", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" },
+          FUSL: { g5: "AAL-45735", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" }
+        },
+        GCCH: {
+          FSA: { g5: "AAD-98829", copilot: "AAU-79923", addOn: "EP2-92330", fullG7: "EP2-92323" },
+          FUSL: { g5: "AAD-99035", copilot: "AAU-79923", addOn: "EP2-92330", fullG7: "EP2-92323" }
+        },
+        DoD: {
+          FSA: { g5: "AAL-45747", copilot: "EP2-41695", addOn: "EP2-92330", fullG7: "EP2-92323" },
+          FUSL: { g5: "AAL-45742", copilot: "EP2-41695", addOn: "EP2-92330", fullG7: "EP2-92323" }
+        }
+      },
+      old: {
+        GCC: {
+          FSA: { g5: "AAL-48033", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" },
+          FUSL: { g5: "AAL-45735", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" }
+        },
+        GCCH: {
+          FSA: { g5: "AAL-48033", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" },
+          FUSL: { g5: "AAL-45735", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" }
+        },
+        DoD: {
+          FSA: { g5: "AAL-48033", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" },
+          FUSL: { g5: "AAL-45735", copilot: "EP2-24658", addOn: "EP2-92330", fullG7: "EP2-92323" }
+        }
+      }
+    };
+
+    const els = {
+      customerName: document.getElementById("customerName"),
+      enrollmentNumber: document.getElementById("enrollmentNumber"),
+      pricelistType: document.getElementById("pricelistType"),
+      cloud: document.getElementById("cloud"),
+      startDate: document.getElementById("startDate"),
+      endDate: document.getElementById("endDate"),
+      orderDate: document.getElementById("orderDate"),
+      onegovYear: document.getElementById("onegovYear"),
+      motion: document.getElementById("motion"),
+      fsaUsers: document.getElementById("fsaUsers"),
+      fuslUsers: document.getElementById("fuslUsers"),
+      copilotCoverage: document.getElementById("copilotCoverage"),
+      fullG7Discount: document.getElementById("fullG7Discount"),
+      fullG7Cap: document.getElementById("fullG7Cap"),
+      customSection: document.getElementById("customSection"),
+      customG5FSA: document.getElementById("customG5FSA"),
+      customG5FUSL: document.getElementById("customG5FUSL"),
+      customCopilot: document.getElementById("customCopilot"),
+      customA365Entra: document.getElementById("customA365Entra"),
+      calcBtn: document.getElementById("calcBtn"),
+      excelBtn: document.getElementById("excelBtn"),
+      csvBtn: document.getElementById("csvBtn"),
+      showCsvBtn: document.getElementById("showCsvBtn"),
+      summary: document.getElementById("summary"),
+      warningBox: document.getElementById("warningBox"),
+      tbody: document.querySelector("#resultTable tbody"),
+      calcMeta: document.getElementById("calcMeta"),
+      downloadStatus: document.getElementById("downloadStatus"),
+      csvTextArea: document.getElementById("csvTextArea")
+    };
+
+    let lastResult = null;
+
+    function roundCurrency(value) {
+      if (!Number.isFinite(value)) return value;
+      const threeDecimal = Number(value.toFixed(3));
+      return Math.round((threeDecimal + Number.EPSILON) * 100) / 100;
+    }
+
+    function money(n) {
+      if (!Number.isFinite(n)) return "-";
+      return "$" + roundCurrency(n).toFixed(2);
+    }
+
+    function triggerDownload(content, mimeType, filename) {
+      const blob = new Blob([content], { type: mimeType });
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename);
+        return true;
+      }
+      const a = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = filename;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return true;
+    }
+
+    function isEmbeddedPreview() {
+      try {
+        return window.top !== window.self;
+      } catch {
+        return true;
+      }
+    }
+
+    function getBase() {
+      if (els.pricelistType.value === "custom") {
+        return {
+          g5FSA: Number(els.customG5FSA.value),
+          g5FUSL: Number(els.customG5FUSL.value),
+          copilot: Number(els.customCopilot.value),
+          addOn: Number(els.customA365Entra.value),
+          fullG7USL: 99
+        };
+      }
+      return PRICING[els.pricelistType.value][els.cloud.value];
+    }
+
+    function getSkuSet(licenseType) {
+      if (els.pricelistType.value === "custom") {
+        return {
+          g5: licenseType === "FSA" ? "CUSTOM-G5-FSA" : "CUSTOM-G5-FUSL",
+          copilot: "CUSTOM-COPILOT",
+          addOn: "CUSTOM-A365-ENTRA-ADDON",
+          fullG7: "CUSTOM-G7-USL"
+        };
+      }
+      return SKU_MAP[els.pricelistType.value][els.cloud.value][licenseType];
+    }
+
+    function makeComponents(input) {
+      const items = [
+        {
+          component: "M365 G5",
+          sku: input.skuSet.g5,
+          listPrice: input.g5List,
+          discountPct: input.g5Discount,
+          netPrice: input.g5List * (1 - input.g5Discount / 100)
+        },
+        {
+          component: "M365 Copilot",
+          sku: input.skuSet.copilot,
+          listPrice: input.copilotList,
+          discountPct: input.copilotDiscount,
+          netPrice: input.copilotList * (1 - input.copilotDiscount / 100)
+        }
+      ];
+      if (input.includeAddOn) {
+        items.push({
+          component: "A365 + Entra add-on",
+          sku: input.skuSet.addOn,
+          listPrice: input.addOnList,
+          discountPct: input.addOnDiscount,
+          netPrice: input.addOnList * (1 - input.addOnDiscount / 100)
+        });
+      }
+      return items;
+    }
+
+    function makeFullG7Component(skuSet, listPrice, netPrice) {
+      return [{
+        component: "Full G7 USL",
+        sku: skuSet.fullG7,
+        listPrice,
+        discountPct: (1 - (netPrice / listPrice)) * 100,
+        netPrice
+      }];
+    }
+
+    function makeAddOnOnlyComponent(skuSet, addOnList, addOnDiscount) {
+      return [{
+        component: "A365 + Entra add-on",
+        sku: skuSet.addOn,
+        listPrice: addOnList,
+        discountPct: addOnDiscount,
+        netPrice: addOnList * (1 - addOnDiscount / 100)
+      }];
+    }
+
+    function sumNet(components) {
+      return components.reduce((acc, item) => acc + item.netPrice, 0);
+    }
+
+    function yearOfOffer(startDate, orderDate) {
+      if (!startDate || !orderDate) return null;
+      const s = new Date(startDate + "T00:00:00");
+      const o = new Date(orderDate + "T00:00:00");
+      if (o < s) return null;
+      const diffDays = Math.floor((o - s) / (1000 * 60 * 60 * 24));
+      const year = Math.floor(diffDays / 365) + 1;
+      if (year < 1) return 1;
+      if (year > 3) return 3;
+      return year;
+    }
+
+    function monthsToNextAnniversary(startDate, orderDate) {
+      if (!startDate || !orderDate) return null;
+      const start = new Date(startDate + "T00:00:00");
+      const order = new Date(orderDate + "T00:00:00");
+      if (Number.isNaN(start.getTime()) || Number.isNaN(order.getTime())) return null;
+      let next = new Date(order.getFullYear(), start.getMonth(), start.getDate());
+      if (order >= next) next = new Date(order.getFullYear() + 1, start.getMonth(), start.getDate());
+      const diffDays = Math.max(0, Math.round((next - order) / (1000 * 60 * 60 * 24)));
+      return Math.max(0, Math.min(12, Math.round(diffDays / 30.4375)));
+    }
+
+    function resolveUserSplit() {
+      const enteredFsa = Math.max(0, Number(els.fsaUsers.value) || 0);
+      const enteredFusl = Math.max(0, Number(els.fuslUsers.value) || 0);
+      return {
+        fsaUsers: enteredFsa,
+        fuslUsers: enteredFusl,
+        totalUsers: enteredFsa + enteredFusl
+      };
+    }
+
+    function inferLicenseType(userSplit) {
+      if (userSplit.fsaUsers > 0 && userSplit.fuslUsers > 0) return "Mixed";
+      if (userSplit.fsaUsers > 0) return "FSA";
+      return "FUSL";
+    }
+
+    function blendedPupm(fsaPupm, fuslPupm, userSplit) {
+      if (userSplit.totalUsers <= 0) return 0;
+      return ((fsaPupm * userSplit.fsaUsers) + (fuslPupm * userSplit.fuslUsers)) / userSplit.totalUsers;
+    }
+
+    function calc() {
+      const base = getBase();
+      const userSplit = resolveUserSplit();
+      const inferredLicenseType = inferLicenseType(userSplit);
+      const skuSet = getSkuSet(inferredLicenseType === "Mixed" ? "FUSL" : inferredLicenseType);
+      const users = userSplit.totalUsers;
+      const coverage = Number(els.copilotCoverage.value) || 0;
+      const year = Number(els.onegovYear.value);
+      const motion = els.motion.value;
+      const autoYear = yearOfOffer(els.startDate.value, els.orderDate.value);
+      const g5 = inferredLicenseType === "FSA" ? base.g5FSA : base.g5FUSL;
+      const onegovY2 = g5 * 0.75 + base.copilot * 0.50;
+      const onegovY3 = g5 * 0.75 + base.copilot * 0.75;
+      const fsaY1 = base.g5FSA * 0.75 + base.copilot * 0.50;
+      const fuslY1 = base.g5FUSL * 0.75 + base.copilot * 0.50;
+      const fsaY2 = base.g5FSA * 0.75 + base.copilot * 0.75 + base.addOn * 0.56;
+      const fuslY2 = base.g5FUSL * 0.75 + base.copilot * 0.75 + base.addOn * 0.56;
+      const g7Y1FromY2 = onegovY2;
+      const g7Y2FromY2 = onegovY3 + base.addOn * 0.56;
+      let g7Y3 = base.fullG7USL * (1 - (Number(els.fullG7Discount.value || 0) / 100));
+      const cap = Number(els.fullG7Cap.value);
+      if (Number.isFinite(cap) && cap > 0) g7Y3 = Math.min(g7Y3, cap);
+
+      const rows = [];
+      if (year === 2 && motion === "anniversary") {
+        const c1 = makeComponents({
+          skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+          g5Discount: 25, copilotDiscount: 50, includeAddOn: true, addOnDiscount: 100
+        });
+        rows.push({
+          stage: "Now (G7 Year 1)",
+          sell: "Full G7 bundle at OneGov Year 2 economics",
+          pupm: blendedPupm(fsaY1, fuslY1, userSplit),
+          fsaPupm: fsaY1,
+          fuslPupm: fuslY1,
+          components: c1,
+          notes: "Equivalent to 25% off G5 + 50% off Copilot + 100% off G7 add-on."
+        });
+        const c2 = makeComponents({
+          skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+          g5Discount: 25, copilotDiscount: 25, includeAddOn: true, addOnDiscount: 44
+        });
+        rows.push({
+          stage: "Next Anniversary (G7 Year 2)",
+          sell: "Full G7 bundle with reduced add-on discount",
+          pupm: blendedPupm(fsaY2, fuslY2, userSplit),
+          fsaPupm: fsaY2,
+          fuslPupm: fuslY2,
+          components: c2,
+          notes: "Uses OneGov Y3 base + 44% discount on add-on (56% payable)."
+        });
+        const c3 = makeFullG7Component(skuSet, base.fullG7USL, g7Y3);
+        rows.push({
+          stage: "Following Anniversary (G7 Year 3)",
+          sell: "Full G7 USL discounted from list",
+          pupm: g7Y3,
+          fsaPupm: g7Y3,
+          fuslPupm: g7Y3,
+          components: c3,
+          notes: "Target out-year discount from full USL list."
+        });
+      } else if (motion === "midterm") {
+        if (year === 1) {
+          const monthsAtZero = monthsToNextAnniversary(els.startDate.value, els.orderDate.value);
+          const monthsAtY1AfterAnniv = monthsAtZero === null ? null : Math.max(0, 12 - monthsAtZero);
+          const monthsAtY2AfterAnniv = monthsAtZero === null ? null : Math.max(0, monthsAtZero);
+          const blendedFsa = monthsAtZero === null ? fsaY1 : ((monthsAtY1AfterAnniv * fsaY1) + (monthsAtY2AfterAnniv * fsaY2)) / 12;
+          const blendedFusl = monthsAtZero === null ? fuslY1 : ((monthsAtY1AfterAnniv * fuslY1) + (monthsAtY2AfterAnniv * fuslY2)) / 12;
+          const c0 = makeAddOnOnlyComponent(skuSet, base.addOn, 100);
+          rows.push({
+            stage: "Now (mid-term in OneGov Year 1)",
+            sell: "G7 add-on only (bridge motion) at $0 to next anniversary",
+            pupm: 0,
+            fsaPupm: 0,
+            fuslPupm: 0,
+            components: c0,
+            notes: "Customer keeps existing OneGov base; sell only add-on at 100% discount."
+          });
+          const c1 = makeComponents({
+            skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+            g5Discount: 25, copilotDiscount: 50, includeAddOn: true, addOnDiscount: 100
+          });
+          rows.push({
+            stage: "Next Anniversary (G7 blended)",
+            sell: "Move to full G7 at OneGov Year 2 blended economics",
+            pupm: blendedPupm(blendedFsa, blendedFusl, userSplit),
+            fsaPupm: blendedFsa,
+            fuslPupm: blendedFusl,
+            components: c1,
+            notes: monthsAtZero === null
+              ? "G5 25% off, Copilot 50% off, add-on still 100% off."
+              : `Blended rate: ${monthsAtY1AfterAnniv} month(s) at Y1 economics + ${monthsAtY2AfterAnniv} month(s) at Y2 economics.`
+          });
+          const c2 = makeComponents({
+            skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+            g5Discount: 25, copilotDiscount: 25, includeAddOn: true, addOnDiscount: 44
+          });
+          rows.push({
+            stage: "Following Anniversary",
+            sell: "Continue full G7 at next-year blended economics",
+            pupm: blendedPupm(fsaY2, fuslY2, userSplit),
+            fsaPupm: fsaY2,
+            fuslPupm: fuslY2,
+            components: c2,
+            notes: "G5 25% off, Copilot 25% off, add-on 44% off."
+          });
+        } else {
+        const c1 = makeComponents({
+          skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+          g5Discount: 25, copilotDiscount: 50, includeAddOn: true, addOnDiscount: 100
+        });
+        rows.push({
+          stage: "Now (mid-term)",
+          sell: "Bridge / add-on motion (Deal Desk review)",
+          pupm: blendedPupm(fsaY1, fuslY1, userSplit),
+          fsaPupm: fsaY1,
+          fuslPupm: fuslY1,
+          components: c1,
+          notes: "Use bridge SKU and revised CPS for current term remainder."
+        });
+        const c2 = makeComponents({
+          skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+          g5Discount: 25, copilotDiscount: 25, includeAddOn: true, addOnDiscount: 44
+        });
+        rows.push({
+          stage: "Next Anniversary",
+          sell: "Convert to G7 bundle",
+          pupm: blendedPupm(fsaY2, fuslY2, userSplit),
+          fsaPupm: fsaY2,
+          fuslPupm: fuslY2,
+          components: c2,
+          notes: "Anniversary conversion to G7 suite motion."
+        });
+        const c3 = makeFullG7Component(skuSet, base.fullG7USL, g7Y3);
+        rows.push({
+          stage: "Following Anniversary",
+          sell: "Out-year G7 discounted USL",
+          pupm: g7Y3,
+          fsaPupm: g7Y3,
+          fuslPupm: g7Y3,
+          components: c3,
+          notes: "Apply agreed out-year discount strategy."
+        });
+        }
+      } else {
+        const currentDiscount = year === 3 ? 25 : 50;
+        const c1 = makeComponents({
+          skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
+          g5Discount: 25, copilotDiscount: currentDiscount, includeAddOn: false, addOnDiscount: 0
+        });
+        rows.push({
+          stage: "Current view",
+          sell: "OneGov bundle reference",
+          pupm: blendedPupm(
+            year === 3 ? (base.g5FSA * 0.75 + base.copilot * 0.75) : (base.g5FSA * 0.75 + base.copilot * 0.50),
+            year === 3 ? (base.g5FUSL * 0.75 + base.copilot * 0.75) : (base.g5FUSL * 0.75 + base.copilot * 0.50),
+            userSplit
+          ),
+          fsaPupm: year === 3 ? (base.g5FSA * 0.75 + base.copilot * 0.75) : (base.g5FSA * 0.75 + base.copilot * 0.50),
+          fuslPupm: year === 3 ? (base.g5FUSL * 0.75 + base.copilot * 0.75) : (base.g5FUSL * 0.75 + base.copilot * 0.50),
+          components: c1,
+          notes: "Adjust OneGov year/motion for direct G7 year mapping."
+        });
+      }
+
+      rows.forEach((r) => {
+        r.pupm = roundCurrency(r.pupm);
+        r.fsaPupm = roundCurrency(r.fsaPupm);
+        r.fuslPupm = roundCurrency(r.fuslPupm);
+      });
+
+      const lowCoverage = coverage < 70;
+      render(rows, userSplit, {
+        onegovY2,
+        onegovY3,
+        g7Y1FromY2,
+        g7Y2FromY2,
+        g7Y3,
+        autoYear,
+        lowCoverage
+      });
+    }
+
+    function render(rows, userSplit, meta) {
+      els.tbody.innerHTML = "";
+      rows.forEach((r) => {
+        const tr = document.createElement("tr");
+        const fsaTotal = roundCurrency(r.fsaPupm * userSplit.fsaUsers);
+        const fuslTotal = roundCurrency(r.fuslPupm * userSplit.fuslUsers);
+        const combinedTotal = roundCurrency(fsaTotal + fuslTotal);
+        tr.innerHTML = `
+          <td>${r.stage}</td>
+          <td>${r.sell}</td>
+          <td class="money">${money(r.fsaPupm)}</td>
+          <td class="money">${money(r.fuslPupm)}</td>
+          <td class="money">${money(fsaTotal)}</td>
+          <td class="money">${money(fuslTotal)}</td>
+          <td class="money">${money(combinedTotal)}</td>
+          <td>${r.notes}</td>
+        `;
+        els.tbody.appendChild(tr);
+      });
+
+      els.summary.textContent = `Generated guidance for ${els.customerName.value || "customer"} (${userSplit.totalUsers} users total: FSA ${userSplit.fsaUsers}, FUSL ${userSplit.fuslUsers}; ${els.cloud.value}, ${els.pricelistType.value} pricelist).`;
+      const warnings = [];
+      if (meta.lowCoverage) warnings.push("Copilot coverage is below 70%; exception/ramp approval may be required.");
+      if (meta.autoYear && Number(els.onegovYear.value) !== meta.autoYear) warnings.push(`Entered OneGov year (${els.onegovYear.value}) differs from date-derived year (${meta.autoYear}).`);
+      if (els.pricelistType.value === "custom") warnings.push("Custom pricing mode is active. Validate manual rates before sharing with Deal Desk.");
+      els.warningBox.innerHTML = warnings.map((w) => `<div class="warn">${w}</div>`).join("");
+      els.calcMeta.textContent = `Reference formulas: OneGov Y2 = G5*0.75 + Copilot*0.50; OneGov Y3 = G5*0.75 + Copilot*0.75; G7 Y2 from Y2-anniversary = OneGov Y3 + (Add-on*0.56).`;
+
+      const detailRows = rows.flatMap((r) => r.components.map((c) => ({
+        stage: r.stage,
+        sell: r.sell,
+        notes: r.notes,
+        sku: c.sku,
+        component: c.component,
+        listPrice: c.listPrice,
+        discountPct: c.discountPct,
+        netPrice: c.netPrice,
+        stagePupm: r.pupm,
+        stageMonthly: roundCurrency(r.pupm * userSplit.totalUsers),
+        fsaPupm: r.fsaPupm,
+        fuslPupm: r.fuslPupm,
+        fsaUsers: userSplit.fsaUsers,
+        fuslUsers: userSplit.fuslUsers,
+        fsaMonthly: roundCurrency(r.fsaPupm * userSplit.fsaUsers),
+        fuslMonthly: roundCurrency(r.fuslPupm * userSplit.fuslUsers),
+        combinedMonthly: roundCurrency((r.fsaPupm * userSplit.fsaUsers) + (r.fuslPupm * userSplit.fuslUsers))
+      })));
+
+      lastResult = {
+        generatedAt: new Date().toISOString(),
+        customerName: els.customerName.value,
+        enrollmentNumber: els.enrollmentNumber.value,
+        pricingType: els.pricelistType.value,
+        cloud: els.cloud.value,
+        licenseType: inferLicenseType(userSplit),
+        onegovYear: els.onegovYear.value,
+        motion: els.motion.value,
+        totalUsers: userSplit.totalUsers,
+        fsaUsers: userSplit.fsaUsers,
+        fuslUsers: userSplit.fuslUsers,
+        base: getBase(),
+        rows,
+        detailRows
+      };
+    }
+
+    function getScenarioSku(stage, pricingType, cloud, licenseType, base) {
+      const bundleSkuMap = {
+        new: {
+          GCC: { FSA: "EP2-73516", FUSL: "EP2-73517" },
+          GCCH: { FSA: "EP2-73520", FUSL: "EP2-73521" },
+          DoD: { FSA: "EP2-73512", FUSL: "EP2-73513" }
+        },
+        old: {
+          GCC: { FSA: "EP2-73516", FUSL: "EP2-73517" },
+          GCCH: { FSA: "EP2-73520", FUSL: "EP2-73521" },
+          DoD: { FSA: "EP2-73512", FUSL: "EP2-73513" }
+        }
+      };
+
+      if (stage.toLowerCase().includes("add-on only")) {
+        return { sku: "EP2-92330", levelD: base.addOn };
+      }
+      if (stage.toLowerCase().includes("current view")) {
+        const type = licenseType === "FSA" ? "FSA" : "FUSL";
+        const sku = bundleSkuMap[pricingType][cloud][type];
+        const levelD = type === "FSA" ? (base.g5FSA + base.copilot) : (base.g5FUSL + base.copilot);
+        return { sku, levelD };
+      }
+      return { sku: "EP2-92323", levelD: base.fullG7USL };
+    }
+
+    function buildScenarioRows() {
+      const licenseType = lastResult.licenseType === "Mixed" ? (lastResult.fsaUsers >= lastResult.fuslUsers ? "FSA" : "FUSL") : lastResult.licenseType;
+      const rows = lastResult.rows.map((r) => {
+        const scenario = getScenarioSku(r.stage, lastResult.pricingType, lastResult.cloud, licenseType, lastResult.base);
+        const netPrice = roundCurrency(r.pupm);
+        const discountPct = scenario.levelD > 0 ? roundCurrency((1 - (netPrice / scenario.levelD)) * 100) : 0;
+        const discountAmt = roundCurrency(scenario.levelD - netPrice);
+        return {
+          stage: r.stage,
+          sell: r.sell,
+          sku: scenario.sku,
+          levelD: roundCurrency(scenario.levelD),
+          discountPct,
+          discountAmt,
+          netPrice,
+          monthly: roundCurrency(netPrice * lastResult.totalUsers),
+          notes: r.notes
+        };
+      });
+
+      const grouped = {};
+      rows.forEach((r) => {
+        if (!grouped[r.sku]) grouped[r.sku] = { levelDTotal: 0, netTotal: 0 };
+        grouped[r.sku].levelDTotal += r.levelD;
+        grouped[r.sku].netTotal += r.netPrice;
+      });
+
+      rows.forEach((r) => {
+        const g = grouped[r.sku];
+        r.offerTotalDiscountPct = g.levelDTotal > 0 ? roundCurrency((1 - (g.netTotal / g.levelDTotal)) * 100) : 0;
+      });
+      return rows;
+    }
+
+    function buildCsvString() {
+      const scenarioRows = buildScenarioRows();
+      const header = ["Stage","Sell Guidance","SKU","Level D Price","Discount Applied %","Net Price","Monthly Total","Total Offer Discount % (SKU)","Notes"];
+      const rows = scenarioRows.map((r) => [
+        r.stage, r.sell, r.sku, r.levelD.toFixed(2), r.discountPct.toFixed(2), r.netPrice.toFixed(2), r.monthly.toFixed(2), r.offerTotalDiscountPct.toFixed(2), r.notes
+      ]);
+      const esc = (v) => `"${String(v).replace(/"/g, "\"\"")}"`;
+      return [header, ...rows].map((row) => row.map(esc).join(",")).join("\r\n");
+    }
+
+    function showCsvText() {
+      if (!lastResult) {
+        calc();
+        if (!lastResult) return;
+      }
+      const csv = buildCsvString();
+      els.csvTextArea.style.display = "block";
+      els.csvTextArea.value = csv;
+      els.csvTextArea.focus();
+      els.csvTextArea.select();
+      els.downloadStatus.textContent = "Manual fallback: copy this CSV text and save as a .csv file in Notepad (File > Save As).";
+    }
+
+    function downloadExcel() {
+      if (!lastResult) {
+        calc();
+        if (!lastResult) return;
+      }
+      const scenarioRows = buildScenarioRows();
+      const headers = ["Stage", "Sell Guidance", "SKU", "Level D Price", "Discount Applied", "Net Price", "Monthly Total", "Total Offer Discount % (SKU)", "Notes"];
+      const headerHtml = headers.map((h) => `<th style="font-weight:700;border:1px solid #999;padding:8px;background:#eaeaea;">${h}</th>`).join("");
+      const bodyHtml = scenarioRows.map((r) => `
+        <tr>
+          <td style="border:1px solid #999;padding:8px;">${r.stage}</td>
+          <td style="border:1px solid #999;padding:8px;">${r.sell}</td>
+          <td style="border:1px solid #999;padding:8px;">${r.sku}</td>
+          <td style="border:1px solid #999;padding:8px;">$${r.levelD.toFixed(2)}</td>
+          <td style="border:1px solid #999;padding:8px;">${r.discountPct.toFixed(2)}%</td>
+          <td style="border:1px solid #999;padding:8px;">$${r.netPrice.toFixed(2)}</td>
+          <td style="border:1px solid #999;padding:8px;">$${r.monthly.toFixed(2)}</td>
+          <td style="border:1px solid #999;padding:8px;">${r.offerTotalDiscountPct.toFixed(2)}%</td>
+          <td style="border:1px solid #999;padding:8px;">${r.notes}</td>
+        </tr>`).join("");
+
+      const html = `
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+  <table style="border-collapse:collapse;font-family:Segoe UI, Arial, sans-serif;font-size:12px;">
+    <tr><th colspan="9" style="text-align:left;padding:8px;border:1px solid #999;background:#d9d9d9;font-weight:700;">
+      Customer: ${lastResult.customerName || ""} | Enrollment: ${lastResult.enrollmentNumber || ""} | Cloud: ${lastResult.cloud} | Pricelist: ${lastResult.pricingType}
+    </th></tr>
+    <tr>${headerHtml}</tr>
+    ${bodyHtml}
+  </table>
+</body>
+</html>`;
+      const customer = (lastResult.customerName || "customer").replace(/\s+/g, "-");
+      if (isEmbeddedPreview()) {
+        els.downloadStatus.textContent = "Download is blocked in embedded preview. Use 'Show CSV text (manual save)' or open the HTML file locally.";
+        showCsvText();
+        return;
+      }
+      triggerDownload(html, "application/vnd.ms-excel", `onegov-g7-guidance-${customer}.xls`);
+      els.downloadStatus.textContent = "Excel export started. If no file appears, use CSV fallback or Show CSV text.";
+    }
+
+    function downloadCsvFallback() {
+      if (!lastResult) {
+        calc();
+        if (!lastResult) return;
+      }
+      const csv = buildCsvString();
+      const customer = (lastResult.customerName || "customer").replace(/\s+/g, "-");
+      if (isEmbeddedPreview()) {
+        showCsvText();
+        return;
+      }
+      triggerDownload(csv, "text/csv;charset=utf-8", `onegov-g7-guidance-${customer}.csv`);
+      els.downloadStatus.textContent = "CSV fallback export started.";
+    }
+
+    function syncCustomSection() {
+      els.customSection.style.display = els.pricelistType.value === "custom" ? "grid" : "none";
+    }
+
+    function init() {
+      const today = new Date().toISOString().slice(0, 10);
+      els.orderDate.value = today;
+      syncCustomSection();
+      calc();
+    }
+
+    els.pricelistType.addEventListener("change", () => { syncCustomSection(); calc(); });
+    [
+      "cloud", "startDate", "endDate", "orderDate",
+      "onegovYear", "motion", "fsaUsers", "fuslUsers", "copilotCoverage",
+      "fullG7Discount", "fullG7Cap", "customG5FSA", "customG5FUSL",
+      "customCopilot", "customA365Entra", "customerName", "enrollmentNumber"
+    ].forEach((id) => els[id].addEventListener("input", () => calc()));
+    els.calcBtn.addEventListener("click", calc);
+    els.excelBtn.addEventListener("click", downloadExcel);
+    els.csvBtn.addEventListener("click", downloadCsvFallback);
+    els.showCsvBtn.addEventListener("click", showCsvText);
+    init();
+  </script>
+</body>
+</html>
