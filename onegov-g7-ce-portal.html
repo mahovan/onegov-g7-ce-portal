@@ -832,7 +832,7 @@
       };
     }
 
-    function getScenarioSku(stage, pricingType, cloud, licenseType, base) {
+    function getScenarioSku(stage, sell, pricingType, cloud, licenseType, base) {
       const bundleSkuMap = {
         new: {
           GCC: { FSA: "EP2-73516", FUSL: "EP2-73517" },
@@ -846,10 +846,20 @@
         }
       };
 
-      if (stage.toLowerCase().includes("add-on only")) {
+      const stageLower = stage.toLowerCase();
+      const sellLower = (sell || "").toLowerCase();
+
+      const isBridgeAddOnStage =
+        stageLower.includes("add-on only") ||
+        (
+          stageLower.startsWith("now") &&
+          (stageLower.includes("mid-term") || sellLower.includes("add-on") || sellLower.includes("bridge"))
+        );
+
+      if (isBridgeAddOnStage) {
         return { sku: "EP2-92330", levelD: base.addOn };
       }
-      if (stage.toLowerCase().includes("current view")) {
+      if (stageLower.includes("current view")) {
         const type = licenseType === "FSA" ? "FSA" : "FUSL";
         const sku = bundleSkuMap[pricingType][cloud][type];
         const levelD = type === "FSA" ? (base.g5FSA + base.copilot) : (base.g5FUSL + base.copilot);
@@ -861,7 +871,7 @@
     function buildScenarioRows() {
       const licenseType = lastResult.licenseType === "Mixed" ? (lastResult.fsaUsers >= lastResult.fuslUsers ? "FSA" : "FUSL") : lastResult.licenseType;
       const rows = lastResult.rows.map((r) => {
-        const scenario = getScenarioSku(r.stage, lastResult.pricingType, lastResult.cloud, licenseType, lastResult.base);
+        const scenario = getScenarioSku(r.stage, r.sell, lastResult.pricingType, lastResult.cloud, licenseType, lastResult.base);
         const netPrice = roundCurrency(r.pupm);
         const discountPct = scenario.levelD > 0 ? roundCurrency((1 - (netPrice / scenario.levelD)) * 100) : 0;
         const discountAmt = roundCurrency(scenario.levelD - netPrice);
@@ -877,26 +887,14 @@
           notes: r.notes
         };
       });
-
-      const grouped = {};
-      rows.forEach((r) => {
-        if (!grouped[r.sku]) grouped[r.sku] = { levelDTotal: 0, netTotal: 0 };
-        grouped[r.sku].levelDTotal += r.levelD;
-        grouped[r.sku].netTotal += r.netPrice;
-      });
-
-      rows.forEach((r) => {
-        const g = grouped[r.sku];
-        r.offerTotalDiscountPct = g.levelDTotal > 0 ? roundCurrency((1 - (g.netTotal / g.levelDTotal)) * 100) : 0;
-      });
       return rows;
     }
 
     function buildCsvString() {
       const scenarioRows = buildScenarioRows();
-      const header = ["Stage","Sell Guidance","SKU","Level D Price","Discount Applied %","Net Price","Monthly Total","Total Offer Discount % (SKU)","Notes"];
+      const header = ["Stage","Sell Guidance","SKU","Level D Price","Discount Applied %","Net Price","Monthly Total","Notes"];
       const rows = scenarioRows.map((r) => [
-        r.stage, r.sell, r.sku, r.levelD.toFixed(2), r.discountPct.toFixed(2), r.netPrice.toFixed(2), r.monthly.toFixed(2), r.offerTotalDiscountPct.toFixed(2), r.notes
+        r.stage, r.sell, r.sku, r.levelD.toFixed(2), r.discountPct.toFixed(2), r.netPrice.toFixed(2), r.monthly.toFixed(2), r.notes
       ]);
       const esc = (v) => `"${String(v).replace(/"/g, "\"\"")}"`;
       return [header, ...rows].map((row) => row.map(esc).join(",")).join("\r\n");
@@ -921,7 +919,7 @@
         if (!lastResult) return;
       }
       const scenarioRows = buildScenarioRows();
-      const headers = ["Stage", "Sell Guidance", "SKU", "Level D Price", "Discount Applied", "Net Price", "Monthly Total", "Total Offer Discount % (SKU)", "Notes"];
+      const headers = ["Stage", "Sell Guidance", "SKU", "Level D Price", "Discount Applied", "Net Price", "Monthly Total", "Notes"];
       const headerHtml = headers.map((h) => `<th style="font-weight:700;border:1px solid #999;padding:8px;background:#eaeaea;">${h}</th>`).join("");
       const bodyHtml = scenarioRows.map((r) => `
         <tr>
@@ -932,7 +930,6 @@
           <td style="border:1px solid #999;padding:8px;">${r.discountPct.toFixed(2)}%</td>
           <td style="border:1px solid #999;padding:8px;">$${r.netPrice.toFixed(2)}</td>
           <td style="border:1px solid #999;padding:8px;">$${r.monthly.toFixed(2)}</td>
-          <td style="border:1px solid #999;padding:8px;">${r.offerTotalDiscountPct.toFixed(2)}%</td>
           <td style="border:1px solid #999;padding:8px;">${r.notes}</td>
         </tr>`).join("");
 
@@ -941,7 +938,7 @@
 <head><meta charset="UTF-8"></head>
 <body>
   <table style="border-collapse:collapse;font-family:Segoe UI, Arial, sans-serif;font-size:12px;">
-    <tr><th colspan="9" style="text-align:left;padding:8px;border:1px solid #999;background:#d9d9d9;font-weight:700;">
+    <tr><th colspan="8" style="text-align:left;padding:8px;border:1px solid #999;background:#d9d9d9;font-weight:700;">
       Customer: ${lastResult.customerName || ""} | Enrollment: ${lastResult.enrollmentNumber || ""} | Cloud: ${lastResult.cloud} | Pricelist: ${lastResult.pricingType}
     </th></tr>
     <tr>${headerHtml}</tr>
