@@ -290,6 +290,10 @@
           <label for="fullG7Cap">Optional Year 3 cap price ($/user)</label>
           <input id="fullG7Cap" type="number" min="0" step="0.01" placeholder="e.g., 70.00">
         </div>
+        <div class="field col-3">
+          <label for="extraZeroMonthsY2">Optional extra $0 months blended into Year 2</label>
+          <input id="extraZeroMonthsY2" type="number" min="0" max="12" step="1" value="0">
+        </div>
       </div>
 
       <div id="customSection" class="grid" style="display:none;">
@@ -405,6 +409,7 @@
       copilotCoverage: document.getElementById("copilotCoverage"),
       fullG7Discount: document.getElementById("fullG7Discount"),
       fullG7Cap: document.getElementById("fullG7Cap"),
+      extraZeroMonthsY2: document.getElementById("extraZeroMonthsY2"),
       customSection: document.getElementById("customSection"),
       customG5FSA: document.getElementById("customG5FSA"),
       customG5FUSL: document.getElementById("customG5FUSL"),
@@ -592,14 +597,18 @@
       const coverage = Number(els.copilotCoverage.value) || 0;
       const year = Number(els.onegovYear.value);
       const motion = els.motion.value;
+      const extraZeroMonthsY2 = Math.max(0, Math.min(12, Math.round(Number(els.extraZeroMonthsY2.value) || 0)));
       const autoYear = yearOfOffer(els.startDate.value, els.orderDate.value);
       const g5 = inferredLicenseType === "FSA" ? base.g5FSA : base.g5FUSL;
       const onegovY2 = g5 * 0.75 + base.copilot * 0.50;
       const onegovY3 = g5 * 0.75 + base.copilot * 0.75;
       const fsaY1 = base.g5FSA * 0.75 + base.copilot * 0.50;
       const fuslY1 = base.g5FUSL * 0.75 + base.copilot * 0.50;
+      const y2AddOnPayFactor = (12 - extraZeroMonthsY2) / 12;
       const fsaY2 = base.g5FSA * 0.75 + base.copilot * 0.75 + base.addOn * 0.56;
       const fuslY2 = base.g5FUSL * 0.75 + base.copilot * 0.75 + base.addOn * 0.56;
+      const fsaY2Blended = base.g5FSA * 0.75 + base.copilot * 0.75 + (base.addOn * 0.56 * y2AddOnPayFactor);
+      const fuslY2Blended = base.g5FUSL * 0.75 + base.copilot * 0.75 + (base.addOn * 0.56 * y2AddOnPayFactor);
       const g7Y1FromY2 = onegovY2;
       const g7Y2FromY2 = onegovY3 + base.addOn * 0.56;
       let g7Y3 = base.fullG7USL * (1 - (Number(els.fullG7Discount.value || 0) / 100));
@@ -649,8 +658,8 @@
           const monthsAtZero = monthsToNextAnniversary(els.startDate.value, els.orderDate.value);
           const monthsAtY1AfterAnniv = monthsAtZero === null ? null : Math.max(0, 12 - monthsAtZero);
           const monthsAtY2AfterAnniv = monthsAtZero === null ? null : Math.max(0, monthsAtZero);
-          const blendedFsa = monthsAtZero === null ? fsaY1 : ((monthsAtY1AfterAnniv * fsaY1) + (monthsAtY2AfterAnniv * fsaY2)) / 12;
-          const blendedFusl = monthsAtZero === null ? fuslY1 : ((monthsAtY1AfterAnniv * fuslY1) + (monthsAtY2AfterAnniv * fuslY2)) / 12;
+          const blendedFsa = monthsAtZero === null ? fsaY1 : ((monthsAtY1AfterAnniv * fsaY1) + (monthsAtY2AfterAnniv * fsaY2Blended)) / 12;
+          const blendedFusl = monthsAtZero === null ? fuslY1 : ((monthsAtY1AfterAnniv * fuslY1) + (monthsAtY2AfterAnniv * fuslY2Blended)) / 12;
           const c0 = makeAddOnOnlyComponent(skuSet, base.addOn, 100);
           rows.push({
             stage: "Now (mid-term in OneGov Year 1)",
@@ -674,7 +683,7 @@
             components: c1,
             notes: monthsAtZero === null
               ? "G5 25% off, Copilot 50% off, add-on still 100% off."
-              : `Blended rate: ${monthsAtY1AfterAnniv} month(s) at Y1 economics + ${monthsAtY2AfterAnniv} month(s) at Y2 economics.`
+              : `Blended rate: ${monthsAtY1AfterAnniv} month(s) at Y1 economics + ${monthsAtY2AfterAnniv} month(s) at Y2 economics${extraZeroMonthsY2 > 0 ? ` (includes ${extraZeroMonthsY2} extra $0 month(s) in Y2 add-on).` : "."}`
           });
           const c2 = makeComponents({
             skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
@@ -683,11 +692,13 @@
           rows.push({
             stage: "Following Anniversary",
             sell: "Continue full G7 at next-year blended economics",
-            pupm: blendedPupm(fsaY2, fuslY2, userSplit),
-            fsaPupm: fsaY2,
-            fuslPupm: fuslY2,
+            pupm: blendedPupm(fsaY2Blended, fuslY2Blended, userSplit),
+            fsaPupm: fsaY2Blended,
+            fuslPupm: fuslY2Blended,
             components: c2,
-            notes: "G5 25% off, Copilot 25% off, add-on 44% off."
+            notes: extraZeroMonthsY2 > 0
+              ? `G5 25% off, Copilot 25% off, with ${extraZeroMonthsY2} extra $0 month(s) blended into Year 2 add-on.`
+              : "G5 25% off, Copilot 25% off, add-on 44% off."
           });
         } else {
         const c1 = makeComponents({
@@ -710,11 +721,13 @@
         rows.push({
           stage: "Next Anniversary",
           sell: "Convert to G7 bundle",
-          pupm: blendedPupm(fsaY2, fuslY2, userSplit),
-          fsaPupm: fsaY2,
-          fuslPupm: fuslY2,
+          pupm: blendedPupm(fsaY2Blended, fuslY2Blended, userSplit),
+          fsaPupm: fsaY2Blended,
+          fuslPupm: fuslY2Blended,
           components: c2,
-          notes: "Anniversary conversion to G7 suite motion."
+          notes: extraZeroMonthsY2 > 0
+            ? `Anniversary conversion to G7 suite motion with ${extraZeroMonthsY2} extra $0 month(s) blended into Year 2 add-on.`
+            : "Anniversary conversion to G7 suite motion."
         });
         const c3 = makeFullG7Component(skuSet, base.fullG7USL, g7Y3);
         rows.push({
@@ -1004,7 +1017,7 @@
     [
       "cloud", "startDate", "endDate", "orderDate",
       "onegovYear", "motion", "fsaUsers", "fuslUsers", "copilotCoverage",
-      "fullG7Discount", "fullG7Cap", "customG5FSA", "customG5FUSL",
+      "fullG7Discount", "fullG7Cap", "extraZeroMonthsY2", "customG5FSA", "customG5FUSL",
       "customCopilot", "customA365Entra", "customerName", "enrollmentNumber"
     ].forEach((id) => els[id].addEventListener("input", () => calc()));
     els.calcBtn.addEventListener("click", calc);
