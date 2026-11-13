@@ -291,7 +291,7 @@
           <input id="fullG7Cap" type="number" min="0" step="0.01" placeholder="e.g., 70.00">
         </div>
         <div class="field col-3">
-          <label for="extraZeroMonthsY2">Optional extra $0 months blended into Year 2</label>
+          <label for="extraZeroMonthsY2">Optional months blended at current OneGov rate</label>
           <input id="extraZeroMonthsY2" type="number" min="0" max="12" step="1" value="0">
         </div>
       </div>
@@ -604,11 +604,24 @@
       const onegovY3 = g5 * 0.75 + base.copilot * 0.75;
       const fsaY1 = base.g5FSA * 0.75 + base.copilot * 0.50;
       const fuslY1 = base.g5FUSL * 0.75 + base.copilot * 0.50;
-      const y2AddOnPayFactor = (12 - extraZeroMonthsY2) / 12;
       const fsaY2 = base.g5FSA * 0.75 + base.copilot * 0.75 + base.addOn * 0.56;
       const fuslY2 = base.g5FUSL * 0.75 + base.copilot * 0.75 + base.addOn * 0.56;
-      const fsaY2Blended = base.g5FSA * 0.75 + base.copilot * 0.75 + (base.addOn * 0.56 * y2AddOnPayFactor);
-      const fuslY2Blended = base.g5FUSL * 0.75 + base.copilot * 0.75 + (base.addOn * 0.56 * y2AddOnPayFactor);
+      const fsaOneGovY1 = base.g5FSA;
+      const fuslOneGovY1 = base.g5FUSL;
+      const fsaOneGovY2 = fsaY1;
+      const fuslOneGovY2 = fuslY1;
+      const fsaOneGovY3 = fsaY2;
+      const fuslOneGovY3 = fuslY2;
+      const fsaCurrentOneGov = year <= 1 ? fsaOneGovY1 : (year === 2 ? fsaOneGovY2 : fsaOneGovY3);
+      const fuslCurrentOneGov = year <= 1 ? fuslOneGovY1 : (year === 2 ? fuslOneGovY2 : fuslOneGovY3);
+      const fsaNextOneGov = year <= 1 ? fsaOneGovY2 : fsaOneGovY3;
+      const fuslNextOneGov = year <= 1 ? fuslOneGovY2 : fuslOneGovY3;
+      const blendByMonths = (currentRate, nextRate) =>
+        extraZeroMonthsY2 > 0
+          ? ((extraZeroMonthsY2 * currentRate) + ((12 - extraZeroMonthsY2) * nextRate)) / 12
+          : nextRate;
+      const fsaNextAnnivBlended = blendByMonths(fsaCurrentOneGov, fsaNextOneGov);
+      const fuslNextAnnivBlended = blendByMonths(fuslCurrentOneGov, fuslNextOneGov);
       const g7Y1FromY2 = onegovY2;
       const g7Y2FromY2 = onegovY3 + base.addOn * 0.56;
       let g7Y3 = base.fullG7USL * (1 - (Number(els.fullG7Discount.value || 0) / 100));
@@ -658,8 +671,8 @@
           const monthsAtZero = monthsToNextAnniversary(els.startDate.value, els.orderDate.value);
           const monthsAtY1AfterAnniv = monthsAtZero === null ? null : Math.max(0, 12 - monthsAtZero);
           const monthsAtY2AfterAnniv = monthsAtZero === null ? null : Math.max(0, monthsAtZero);
-          const blendedFsa = monthsAtZero === null ? fsaY1 : ((monthsAtY1AfterAnniv * fsaY1) + (monthsAtY2AfterAnniv * fsaY2Blended)) / 12;
-          const blendedFusl = monthsAtZero === null ? fuslY1 : ((monthsAtY1AfterAnniv * fuslY1) + (monthsAtY2AfterAnniv * fuslY2Blended)) / 12;
+          const blendedFsa = monthsAtZero === null ? fsaY1 : ((monthsAtY1AfterAnniv * fsaY1) + (monthsAtY2AfterAnniv * fsaY2)) / 12;
+          const blendedFusl = monthsAtZero === null ? fuslY1 : ((monthsAtY1AfterAnniv * fuslY1) + (monthsAtY2AfterAnniv * fuslY2)) / 12;
           const c0 = makeAddOnOnlyComponent(skuSet, base.addOn, 100);
           rows.push({
             stage: "Now (mid-term in OneGov Year 1)",
@@ -683,7 +696,7 @@
             components: c1,
             notes: monthsAtZero === null
               ? "G5 25% off, Copilot 50% off, add-on still 100% off."
-              : `Blended rate: ${monthsAtY1AfterAnniv} month(s) at Y1 economics + ${monthsAtY2AfterAnniv} month(s) at Y2 economics${extraZeroMonthsY2 > 0 ? ` (includes ${extraZeroMonthsY2} extra $0 month(s) in Y2 add-on).` : "."}`
+              : `Blended rate: ${monthsAtY1AfterAnniv} month(s) at Y1 economics + ${monthsAtY2AfterAnniv} month(s) at Y2 economics.`
           });
           const c2 = makeComponents({
             skuSet, g5List: g5, copilotList: base.copilot, addOnList: base.addOn,
@@ -692,13 +705,11 @@
           rows.push({
             stage: "Following Anniversary",
             sell: "Continue full G7 at next-year blended economics",
-            pupm: blendedPupm(fsaY2Blended, fuslY2Blended, userSplit),
-            fsaPupm: fsaY2Blended,
-            fuslPupm: fuslY2Blended,
+            pupm: blendedPupm(fsaY2, fuslY2, userSplit),
+            fsaPupm: fsaY2,
+            fuslPupm: fuslY2,
             components: c2,
-            notes: extraZeroMonthsY2 > 0
-              ? `G5 25% off, Copilot 25% off, with ${extraZeroMonthsY2} extra $0 month(s) blended into Year 2 add-on.`
-              : "G5 25% off, Copilot 25% off, add-on 44% off."
+            notes: "G5 25% off, Copilot 25% off, add-on 44% off."
           });
         } else {
         const c1 = makeComponents({
@@ -721,12 +732,12 @@
         rows.push({
           stage: "Next Anniversary",
           sell: "Convert to G7 bundle",
-          pupm: blendedPupm(fsaY2Blended, fuslY2Blended, userSplit),
-          fsaPupm: fsaY2Blended,
-          fuslPupm: fuslY2Blended,
+          pupm: blendedPupm(fsaNextAnnivBlended, fuslNextAnnivBlended, userSplit),
+          fsaPupm: fsaNextAnnivBlended,
+          fuslPupm: fuslNextAnnivBlended,
           components: c2,
           notes: extraZeroMonthsY2 > 0
-            ? `Anniversary conversion to G7 suite motion with ${extraZeroMonthsY2} extra $0 month(s) blended into Year 2 add-on.`
+            ? `Anniversary conversion to G7 suite motion blended as ${extraZeroMonthsY2} month(s) at current OneGov rate + ${12 - extraZeroMonthsY2} month(s) at next-year OneGov/G7 rate.`
             : "Anniversary conversion to G7 suite motion."
         });
         const c3 = makeFullG7Component(skuSet, base.fullG7USL, g7Y3);
